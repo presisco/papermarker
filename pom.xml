@@ -70,7 +70,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>main.Entrance</mainClass>
+                            <mainClass>main.MainDialog</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -92,7 +92,7 @@
                     <archive>
                         <manifest>
                             <useUniqueVersions>true</useUniqueVersions>
-                            <mainClass>main.Entrance</mainClass>
+                            <mainClass>main.MainDialog</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
