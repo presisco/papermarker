@@ -11,5 +11,5 @@ data class PaperInfo(
         var abstract: String,
         var downloadCount: Int,
         var citedCount: Int,
-        var refList: List<RefInfo>
+        var refList: List<RefInfo> = ArrayList()
 )

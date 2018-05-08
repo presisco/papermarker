@@ -57,10 +57,10 @@ class WelcomeDialog : Dialog() {
                 }
             }
             searchButton -> {
-                DialogScheduler.jumpTo("search", filePath)
+                DialogScheduler.add("search", filePath)
             }
             markButton -> {
-                DialogScheduler.jumpTo("mark", filePath)
+                DialogScheduler.add("mark", filePath)
             }
         }
     }
