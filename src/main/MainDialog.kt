@@ -90,7 +90,6 @@ object MainDialog: ActionListener{
                     filepath = chooser.selectedFile.absolutePath
                     srcFileField.text = filepath
                     paperDatabaseHelper.setup(filepath)
-                    paperDatabaseHelper.createTables()
                 }
             }
             addPaperButton -> {
@@ -107,7 +106,7 @@ object MainDialog: ActionListener{
                 val algorithmsString = propMap["algorithms"]!!
                 val dataString = propMap["data"]!!
 
-                paperDatabaseHelper.addPaper(currentPaper, userString, algorithmsString, dataString)
+                paperDatabaseHelper.addPaper(currentPaper)
             }
             getInfoFromUrlButton -> {
                 val url = paperFieldMap["link"]!!.text
@@ -123,7 +122,7 @@ object MainDialog: ActionListener{
                 for (item in paperList) {
                     try {
                         val paperInfo = paperInfoExtractor.extractInfoFromUrl(item.link)
-                        paperDatabaseHelper.addPaper(paperInfo, "", "", "")
+                        paperDatabaseHelper.addPaper(paperInfo)
                     } catch (e: Exception) {
                         println("error: ${e.message}, link: ${item.link}")
                     }

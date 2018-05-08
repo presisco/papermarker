@@ -1,6 +1,7 @@
 package main
 
 import com.presisco.lazyjdbc.convertion.SimpleJava2SqlConvertion
+import com.presisco.lazyjdbc.convertion.SimpleSql2JavaConvertion
 import main.model.PaperInfo
 import org.sqlite.SQLiteConnection
 import java.sql.DriverManager
@@ -13,6 +14,7 @@ class PaperDatabaseHelper {
 
     private var connection: SQLiteConnection? = null
     private val java2Sql = SimpleJava2SqlConvertion()
+    private val sql2Java = SimpleSql2JavaConvertion()
 
     fun setup(filePath: String){
         if (connection != null)
@@ -20,6 +22,10 @@ class PaperDatabaseHelper {
 
         connection = DriverManager.getConnection("jdbc:sqlite:$filePath") as SQLiteConnection
         connection!!.autoCommit = false
+
+        createTables()
+
+        println("database $filePath loaded!")
     }
 
     fun createTables(){
@@ -27,6 +33,7 @@ class PaperDatabaseHelper {
         statement.execute(CREATE_PAPER)
         statement.execute(CREATE_AUTHORS)
         statement.execute(CREATE_KEYWORDS)
+        statement.execute(CREATE_INSTITUTES)
         statement.execute(CREATE_USERS)
         statement.execute(CREATE_ALGORITHM)
         statement.execute(CREATE_DATA)
@@ -49,13 +56,29 @@ class PaperDatabaseHelper {
         preparedStatement.executeBatch()
     }
 
-    fun addPaper(paperInfo: PaperInfo, userString: String, algorithmString: String, dataString: String) {
+    fun addUsersInfo(title: String, userString: String) {
+        val newUserStatement = connection!!.prepareStatement(INSERT_USERS)
+        relationshipListInsert(newUserStatement, title, userString.replace("，", ",").split(","))
+        connection!!.commit()
+    }
+
+    fun addAlgorithmsInfo(title: String, algorithmString: String) {
+        val newAlgorithmStatement = connection!!.prepareStatement(INSERT_ALGORITHM)
+        relationshipListInsert(newAlgorithmStatement, title, algorithmString.replace("，", ",").split(","))
+        connection!!.commit()
+    }
+
+    fun addDataInfo(title: String, dataString: String) {
+        val newDataStatement = connection!!.prepareStatement(INSERT_DATA)
+        relationshipListInsert(newDataStatement, title, dataString.replace("，", ",").split(","))
+        connection!!.commit()
+    }
+
+    fun addPaper(paperInfo: PaperInfo) {
         val newPaperStatement = connection!!.prepareStatement(INSERT_PAPER)
         val newKeywordsStatement = connection!!.prepareStatement(INSERT_KEYWORDS)
         val newAuthorsStatement = connection!!.prepareStatement(INSERT_AUTHORS)
-        val newUserStatement = connection!!.prepareStatement(INSERT_USERS)
-        val newAlgorithmStatement = connection!!.prepareStatement(INSERT_ALGORITHM)
-        val newDataStatement = connection!!.prepareStatement(INSERT_DATA)
+        val newInstitutesStatement = connection!!.prepareStatement(INSERT_INSTITUTES)
 
         val title = paperInfo.title
 
@@ -71,17 +94,49 @@ class PaperDatabaseHelper {
 
         relationshipListInsert(newKeywordsStatement, title, paperInfo.keywords)
         relationshipListInsert(newAuthorsStatement, title, paperInfo.authors)
-        relationshipListInsert(newUserStatement, title, userString.replace("，", ",").split(","))
-        relationshipListInsert(newAlgorithmStatement, title, algorithmString.replace("，", ",").split(","))
-        relationshipListInsert(newDataStatement, title, dataString.replace("，", ",").split(","))
+        relationshipListInsert(newInstitutesStatement, title, paperInfo.institutes)
 
         connection!!.commit()
     }
 
+    fun readPaperTitles(): List<String> {
+        val statement = connection!!.createStatement()
+        val resultSet = statement.executeQuery(SELECT_PAPER_TITLES)
+        val titleList = ArrayList<String>()
+        while (resultSet.next()) {
+            val dataRow = sql2Java.toArray(resultSet)
+            titleList.add(dataRow[0] as String)
+        }
+        statement.close()
+        return titleList
+    }
+
+    /*
+    fun readPaperInfo(title: String): PaperInfo{
+        val statement = connection!!.createStatement()
+        val resultSet = statement.executeQuery(SELECT_PAPER.replace("TITLE",title))
+        resultSet.next()
+        val paperInfoRow = sql2Java.toArray(resultSet)
+
+        statement.close()
+        return PaperInfo(
+                title = title,
+                authors =
+        )
+    }
+    */
+
     companion object {
+        const val SELECT_PAPERS = "select * from papers"
+        const val SELECT_PAPER = "select * from papers where title = 'TITLE'"
+        const val SELECT_PAPER_TITLES = "select title from papers"
+        const val SELECT_AUTHORS = "select * from authors where title = 'TITLE'"
+        const val SELECT_KEYWORDS = "select * from keywords where title = 'TITLE'"
+
         const val INSERT_PAPER = "insert into papers values(?,?,?,?,?,?)"
         const val INSERT_KEYWORDS = "insert into keywords values(?,?)"
         const val INSERT_AUTHORS = "insert into authors values(?,?)"
+        const val INSERT_INSTITUTES = "insert into institutes values(?,?)"
         const val INSERT_USERS = "insert into users values(?,?)"
         const val INSERT_ALGORITHM = "insert into algorithms values(?,?)"
         const val INSERT_DATA = "insert into data values(?,?)"
@@ -105,6 +160,12 @@ class PaperDatabaseHelper {
                 "  \"title\" TEXT NOT NULL,\n" +
                 "  \"author\" TEXT NOT NULL,\n" +
                 "  PRIMARY KEY (\"title\", \"author\")\n" +
+                ");"
+
+        const val CREATE_INSTITUTES = "CREATE TABLE IF NOT EXISTS \"institutes\" (\n" +
+                "  \"title\" TEXT NOT NULL,\n" +
+                "  \"institute\" TEXT NOT NULL,\n" +
+                "  PRIMARY KEY (\"title\", \"institute\")\n" +
                 ");"
 
         const val CREATE_USERS = "CREATE TABLE IF NOT EXISTS \"users\" (\n" +

@@ -14,28 +14,34 @@ class KeywordPaperListExtractor : HtmlInfoExtractor<List<PaperListItem>>() {
         var isFinished = false
         var page = 1
         while (!isFinished) {
-            val htmlString = getHtmlString(url.replace("PAGE", page.toString()))
-            val doc = Jsoup.parse(htmlString)
-            val total = doc.getElementById("pcount").text().toInt()
-            val listElement = doc.getElementsByTag("li")
-            for (element in listElement) {
-                val propElements = element.getElementsByTag("a")
+            val finalUrl = url.replace("PAGE", page.toString())
+            try {
+                val htmlString = getHtmlString(finalUrl)
+                val doc = Jsoup.parse(htmlString)
+                val total = doc.getElementById("pcount").text().toInt()
+                val listElement = doc.getElementsByTag("li")
+                for (element in listElement) {
+                    val propElements = element.getElementsByTag("a")
 
-                paperList.add(
-                        PaperListItem(
-                                author = getMatchedTextOnce(htmlString!!, authorPattern),
-                                title = propElements[0].text(),
-                                link = "http://www.cnki.net" + propElements[0].attr("href"),
-                                publisher = propElements[1].text(),
-                                year = propElements[2].text().substring(0..3)
-                        )
-                )
-            }
+                    paperList.add(
+                            PaperListItem(
+                                    author = getMatchedTextOnce(htmlString!!, authorPattern),
+                                    title = propElements[0].text(),
+                                    link = "http://www.cnki.net" + propElements[0].attr("href"),
+                                    publisher = propElements[1].text(),
+                                    year = propElements[2].text().substring(0..3)
+                            )
+                    )
+                }
 
-            if (paperList.size >= total) {
-                isFinished = true
-            } else {
-                page++
+                if (paperList.size >= total) {
+                    isFinished = true
+                } else {
+                    page++
+                }
+            } catch (e: Exception) {
+                println("link failed: $finalUrl")
+                e.printStackTrace()
             }
         }
         return paperList
