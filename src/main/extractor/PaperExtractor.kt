@@ -10,7 +10,12 @@ abstract class PaperExtractor : HtmlInfoExtractor<PaperInfo>() {
     protected val xmlTextPattern = Pattern.compile(REGEX_XML_TEXT)
     protected val summaryInfoHeaderPattern = Pattern.compile(REGEX_SUMMARY_INFO_HEADER)
 
-    fun getPaperTitle(body: Element) = body.getElementById("chTitle").text()
+    fun getPaperTitle(body: Element): String {
+        var titleElement = body.getElementById("chTitle")
+        if (titleElement == null)
+            titleElement = body.getElementById("enTitle")
+        return titleElement.getElementById("chTitle").text()
+    }
 
     fun getPaperKeywords(body: Element): List<String> {
         val keywordsListElement = body.getElementById("ChDivKeyWord")
