@@ -57,6 +57,8 @@ class SearchDialog : Dialog() {
 
                     val keyword = searchKeyField.text.replace(" ", "%20")
                     val paperList = keywordPaperListExtractor.extractListFromKeyword(keyword)
+                    val failList = ArrayList<Pair<String, String>>()
+                    println("paper count for keyword: $keyword is ${paperList.size}")
 
                     progressBar.value = 0
 
@@ -67,6 +69,7 @@ class SearchDialog : Dialog() {
                             val paperInfo = extractors[item.first]!!.extractInfoFromUrl(item.second)
                             paperDatabaseHelper.addPaper(paperInfo)
                         } catch (e: Exception) {
+                            failList.add(item)
                             println("error: ${e.message}, link: ${item.second}")
                             if (e.message != null && !e.message!!.contains("SQLITE_CONSTRAINT_PRIMARYKEY")) {
                                 e.printStackTrace()

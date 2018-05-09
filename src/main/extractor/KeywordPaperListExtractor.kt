@@ -27,6 +27,7 @@ class KeywordPaperListExtractor : HtmlInfoExtractor<List<Pair<String, String>>>(
             var total = 0
             try {
                 val htmlString = getHtmlString(finalUrl)
+
                 val doc = Jsoup.parse(htmlString)
                 total = doc.getElementById("pcount").text().toInt()
                 val listElement = doc.getElementsByTag("li")

@@ -17,11 +17,13 @@ class ConferencePaperExtractor : PaperExtractor() {
         val body = doc.body()
 
         return PaperInfo(
+                id = getPaperIdFromUrl(url),
                 title = getPaperTitle(body),
-                authors = getMatchedTextList(htmlString, authorPattern),
+                authors = getMatchedTextList(getMatchedTextOnce(htmlString, authorPattern), xmlTextPattern),
                 year = getMatchedTextOnce(htmlString, yearPattern),
                 publisher = getMatchedTextOnce(htmlString, publisherPattern),
-                institutes = getMatchedTextList(htmlString, institutePattern),
+                type = getPaperTypeFromUrl(url),
+                institutes = getMatchedTextList(getMatchedTextOnce(htmlString, institutePattern), xmlTextPattern),
                 keywords = getPaperKeywords(body),
                 link = url,
                 abstract = getMatchedTextOnce(htmlString, abstractPattern),
@@ -32,10 +34,10 @@ class ConferencePaperExtractor : PaperExtractor() {
 
     companion object {
         //const val REF_LIST_URL = "http://www.cnki.net/kcms/detail/frame/list.aspx?dbcode=CJFQ&filename=njyd201504013&dbname=CJFQ2015&RefType=1&vl=MTU3NzJESDA2b0JRVDZ6ZDlUWC9xclJJMGZMS1dKaWZOZjl6bVJKaVlyWTlFWWVzTA=="
-        const val REGEX_YEAR = "【会议时间】(.-)\\-"
-        const val REGEX_AUTHOR = "【作者】(.-)</p>"
-        const val REGEX_PUBLISHER = "【会议名称】(.-)</li>"
-        const val REGEX_INSTITUTE = "【机构】(.-)</p>"
-        const val REGEX_ABSTRACT = "【摘要】 <span>(.-)</span>"
+        const val REGEX_YEAR = "【会议时间】(.+?)\\-"
+        const val REGEX_AUTHOR = "【作者】(.+?)</p>"
+        const val REGEX_PUBLISHER = "【会议名称】(.+?)</li>"
+        const val REGEX_INSTITUTE = "【机构】(.+?)</p>"
+        const val REGEX_ABSTRACT = "【摘要】 <span>(.+?)</span>"
     }
 }

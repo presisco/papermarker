@@ -45,10 +45,10 @@ class PaperDatabaseHelper {
         connection!!.close()
     }
 
-    fun relationshipListInsert(preparedStatement: PreparedStatement, title: String, propList: List<String>) {
+    fun relationshipListInsert(preparedStatement: PreparedStatement, id: String, propList: List<String>) {
         for (prop in propList) {
             with(preparedStatement) {
-                setString(1, title)
+                setString(1, id)
                 setString(2, prop)
                 addBatch()
             }
@@ -56,34 +56,34 @@ class PaperDatabaseHelper {
         preparedStatement.executeBatch()
     }
 
-    fun addPropInfo(title: String, table: String, propString: String) {
+    fun addPropInfo(id: String, table: String, propString: String) {
         val newPropStatement = connection!!.prepareStatement(INSERT_PROP.replace("TABLE", table))
-        relationshipListInsert(newPropStatement, title, propString.replace("，", ",").split(","))
+        relationshipListInsert(newPropStatement, id, propString.replace("，", ",").split(","))
         connection!!.commit()
     }
 
-    fun delPropInfo(title: String, table: String) {
+    fun delPropInfo(id: String, table: String) {
         val statement = connection!!.createStatement()
-        statement.execute(DELETE_PROPS.replace("TABLE", table).replace("TITLE", title))
+        statement.execute(DELETE_PROPS.replace("TABLE", table).replace("ID", id))
         connection!!.commit()
     }
 
-    fun editPropInfo(title: String, table: String, propString: String) {
-        delPropInfo(title, table)
-        addPropInfo(title, table, propString)
+    fun editPropInfo(id: String, table: String, propString: String) {
+        delPropInfo(id, table)
+        addPropInfo(id, table, propString)
     }
 
-    fun addUsersInfo(title: String, userString: String) = addPropInfo(title, "users", userString)
+    fun addUsersInfo(id: String, userString: String) = addPropInfo(id, "users", userString)
 
-    fun editUsersInfo(title: String, userString: String) = editPropInfo(title, "users", userString)
+    fun editUsersInfo(id: String, userString: String) = editPropInfo(id, "users", userString)
 
-    fun addAlgorithmsInfo(title: String, algorithmsString: String) = addPropInfo(title, "algorithms", algorithmsString)
+    fun addAlgorithmsInfo(id: String, algorithmsString: String) = addPropInfo(id, "algorithms", algorithmsString)
 
-    fun editAlgorithmsInfo(title: String, algorithmsString: String) = editPropInfo(title, "algorithms", algorithmsString)
+    fun editAlgorithmsInfo(id: String, algorithmsString: String) = editPropInfo(id, "algorithms", algorithmsString)
 
-    fun addDataInfo(title: String, dataString: String) = addPropInfo(title, "data", dataString)
+    fun addDataInfo(id: String, dataString: String) = addPropInfo(id, "data", dataString)
 
-    fun editDataInfo(title: String, dataString: String) = editPropInfo(title, "data", dataString)
+    fun editDataInfo(id: String, dataString: String) = editPropInfo(id, "data", dataString)
 
     fun addPaper(paperInfo: PaperInfo) {
         val newPaperStatement = connection!!.prepareStatement(INSERT_PAPER)
@@ -91,32 +91,34 @@ class PaperDatabaseHelper {
         val newAuthorsStatement = connection!!.prepareStatement(INSERT_AUTHORS)
         val newInstitutesStatement = connection!!.prepareStatement(INSERT_INSTITUTES)
 
-        val title = paperInfo.title
+        val id = paperInfo.id
 
         with(newPaperStatement) {
-            setString(1, paperInfo.title)
-            setString(2, paperInfo.year)
-            setString(3, paperInfo.publisher)
-            setString(4, paperInfo.abstract)
-            setInt(5, paperInfo.downloadCount)
-            setInt(6, paperInfo.citedCount)
-            setString(7, paperInfo.link)
+            setString(1, paperInfo.id)
+            setString(2, paperInfo.title)
+            setString(3, paperInfo.year)
+            setString(4, paperInfo.publisher)
+            setString(5, paperInfo.type)
+            setString(6, paperInfo.abstract)
+            setInt(7, paperInfo.downloadCount)
+            setInt(8, paperInfo.citedCount)
+            setString(9, paperInfo.link)
         }
         newPaperStatement.execute()
 
-        relationshipListInsert(newKeywordsStatement, title, paperInfo.keywords)
-        relationshipListInsert(newAuthorsStatement, title, paperInfo.authors)
-        relationshipListInsert(newInstitutesStatement, title, paperInfo.institutes)
+        relationshipListInsert(newKeywordsStatement, id, paperInfo.keywords)
+        relationshipListInsert(newAuthorsStatement, id, paperInfo.authors)
+        relationshipListInsert(newInstitutesStatement, id, paperInfo.institutes)
 
         connection!!.commit()
     }
 
     fun delPaper(paperInfo: PaperInfo) {
         val statement = connection!!.createStatement()
-        statement.execute(DELETE_PAPER.replace("TITLE", paperInfo.title))
-        statement.execute(DELETE_PROPS.replace("TABLE", "authors").replace("TITLE", paperInfo.title))
-        statement.execute(DELETE_PROPS.replace("TABLE", "institutes").replace("TITLE", paperInfo.title))
-        statement.execute(DELETE_PROPS.replace("TABLE", "keywords").replace("TITLE", paperInfo.title))
+        statement.execute(DELETE_PAPER.replace("ID", paperInfo.id))
+        statement.execute(DELETE_PROPS.replace("TABLE", "authors").replace("ID", paperInfo.id))
+        statement.execute(DELETE_PROPS.replace("TABLE", "institutes").replace("ID", paperInfo.id))
+        statement.execute(DELETE_PROPS.replace("TABLE", "keywords").replace("ID", paperInfo.id))
         connection!!.commit()
     }
 
@@ -140,66 +142,70 @@ class PaperDatabaseHelper {
 
     fun readPaperTitles(sql: String) = sql2StringList(sql)
 
-    fun readPaperTitles() = readPaperTitles(SELECT_PAPER_TITLES)
+    fun readPaperTitles() = readPaperTitles(SELECT_PAPER_IDS)
 
-    fun readPaperTitlesByKeyword(keyword: String) = readPaperTitles(SELECT_PAPER_TITLES_BY_KEYWORD.replace("KEYWORD", keyword))
+    fun readPaperTitlesByKeyword(keyword: String) = readPaperTitles(SELECT_PAPER_IDS_BY_KEYWORD.replace("KEYWORD", keyword))
 
-    fun readAuthorsForPaper(title: String) = sql2StringList(SELECT_AUTHORS.replace("TITLE", title))
+    fun readAuthorsForPaper(id: String) = sql2StringList(SELECT_AUTHORS.replace("ID", id))
 
-    fun readKeywordsForPaper(title: String) = sql2StringList(SELECT_KEYWORDS.replace("TITLE", title))
+    fun readKeywordsForPaper(id: String) = sql2StringList(SELECT_KEYWORDS.replace("ID", id))
 
-    fun readInstitutesForPaper(title: String) = sql2StringList(SELECT_INSTITUTES.replace("TITLE", title))
+    fun readInstitutesForPaper(id: String) = sql2StringList(SELECT_INSTITUTES.replace("ID", id))
 
-    fun readPaperInfo(title: String): PaperInfo{
+    fun readPaperInfo(id: String): PaperInfo {
         val statement = connection!!.createStatement()
-        val resultSet = statement.executeQuery(SELECT_PAPER.replace("TITLE",title))
+        val resultSet = statement.executeQuery(SELECT_PAPER.replace("ID", id))
         resultSet.next()
         val paperInfoRow = sql2Java.toArray(resultSet)
 
         statement.close()
         return PaperInfo(
-                title = title,
-                authors = readAuthorsForPaper(title),
-                keywords = readKeywordsForPaper(title),
-                year = paperInfoRow[1] as String,
-                abstract = paperInfoRow[3] as String,
-                citedCount = paperInfoRow[5] as Int,
-                downloadCount = paperInfoRow[4] as Int,
-                link = paperInfoRow[6] as String,
+                id = id,
+                title = paperInfoRow[1] as String,
+                authors = readAuthorsForPaper(id),
+                keywords = readKeywordsForPaper(id),
+                year = paperInfoRow[2] as String,
+                type = paperInfoRow[4] as String,
+                abstract = paperInfoRow[5] as String,
+                citedCount = paperInfoRow[7] as Int,
+                downloadCount = paperInfoRow[6] as Int,
+                link = paperInfoRow[8] as String,
                 refList = arrayListOf(),
-                institutes = readInstitutesForPaper(title),
-                publisher = paperInfoRow[2] as String
+                institutes = readInstitutesForPaper(id),
+                publisher = paperInfoRow[3] as String
         )
     }
 
-    fun readUsersForPaper(title: String) = sql2StringList(SELECT_USERS.replace("TITLE", title))
-    fun readAlgorithmsForPaper(title: String) = sql2StringList(SELECT_ALGORITHMS.replace("TITLE", title))
-    fun readDataForPaper(title: String) = sql2StringList(SELECT_DATA.replace("TITLE", title))
+    fun readUsersForPaper(id: String) = sql2StringList(SELECT_USERS.replace("ID", id))
+    fun readAlgorithmsForPaper(id: String) = sql2StringList(SELECT_ALGORITHMS.replace("ID", id))
+    fun readDataForPaper(id: String) = sql2StringList(SELECT_DATA.replace("ID", id))
 
     companion object {
-        const val SELECT_PAPER = "select * from papers where title = 'TITLE'"
-        const val SELECT_PAPER_TITLES = "select title from papers"
-        const val SELECT_PAPER_TITLES_BY_KEYWORD = "select papers.title from papers, keywords where keyword = 'KEYWORD' and keywords.title = papers.title"
-        const val SELECT_AUTHORS = "select author from authors where title = 'TITLE'"
-        const val SELECT_KEYWORDS = "select keyword from keywords where title = 'TITLE'"
-        const val SELECT_INSTITUTES = "select institute from institutes where title = 'TITLE'"
-        const val SELECT_USERS = "select user from users where title = 'TITLE'"
-        const val SELECT_ALGORITHMS = "select algorithm from algorithms where title = 'TITLE'"
-        const val SELECT_DATA = "select data from data where title = 'TITLE'"
+        const val SELECT_PAPER = "select * from papers where id = 'ID'"
+        const val SELECT_PAPER_IDS = "select id from papers"
+        const val SELECT_PAPER_IDS_BY_KEYWORD = "select papers.id from papers, keywords where keyword = 'KEYWORD' and keywords.id = papers.id"
+        const val SELECT_AUTHORS = "select author from authors where id = 'ID'"
+        const val SELECT_KEYWORDS = "select keyword from keywords where id = 'ID'"
+        const val SELECT_INSTITUTES = "select institute from institutes where id = 'ID'"
+        const val SELECT_USERS = "select user from users where id = 'ID'"
+        const val SELECT_ALGORITHMS = "select algorithm from algorithms where id = 'ID'"
+        const val SELECT_DATA = "select data from data where id = 'ID'"
 
-        const val DELETE_PAPER = "delete from papers where title = 'TITLE'"
-        const val DELETE_PROPS = "delete from TABLE where title = 'TITLE'"
+        const val DELETE_PAPER = "delete from papers where id = 'ID'"
+        const val DELETE_PROPS = "delete from TABLE where id = 'ID'"
 
-        const val INSERT_PAPER = "insert into papers values(?,?,?,?,?,?,?)"
+        const val INSERT_PAPER = "insert into papers values(?,?,?,?,?,?,?,?,?)"
         const val INSERT_KEYWORDS = "insert into keywords values(?,?)"
         const val INSERT_AUTHORS = "insert into authors values(?,?)"
         const val INSERT_INSTITUTES = "insert into institutes values(?,?)"
         const val INSERT_PROP = "insert into TABLE values(?,?)"
 
         const val CREATE_PAPER = "CREATE TABLE IF NOT EXISTS \"papers\" (\n" +
-                "  \"title\" TEXT NOT NULL PRIMARY KEY,\n" +
+                "  \"id\" TEXT NOT NULL PRIMARY KEY,\n" +
+                "  \"title\" TEXT NOT NULL,\n" +
                 "  \"year\" TEXT NOT NULL,\n" +
                 "  \"publisher\" TEXT NOT NULL,\n" +
+                "  \"type\" TEXT NOT NULL,\n" +
                 "  \"abstract\" TEXT NOT NULL,\n" +
                 "  \"downloads\" INTEGER NOT NULL,\n" +
                 "  \"cited\" INTEGER NOT NULL,\n" +
@@ -207,39 +213,39 @@ class PaperDatabaseHelper {
                 ");"
 
         const val CREATE_KEYWORDS = "CREATE TABLE IF NOT EXISTS \"keywords\" (\n" +
-                "  \"title\" TEXT NOT NULL,\n" +
+                "  \"id\" TEXT NOT NULL,\n" +
                 "  \"keyword\" TEXT NOT NULL,\n" +
-                "  PRIMARY KEY (\"title\", \"keyword\")\n" +
+                "  PRIMARY KEY (\"id\", \"keyword\")\n" +
                 ");"
 
         const val CREATE_AUTHORS = "CREATE TABLE IF NOT EXISTS \"authors\" (\n" +
-                "  \"title\" TEXT NOT NULL,\n" +
+                "  \"id\" TEXT NOT NULL,\n" +
                 "  \"author\" TEXT NOT NULL,\n" +
-                "  PRIMARY KEY (\"title\", \"author\")\n" +
+                "  PRIMARY KEY (\"id\", \"author\")\n" +
                 ");"
 
         const val CREATE_INSTITUTES = "CREATE TABLE IF NOT EXISTS \"institutes\" (\n" +
-                "  \"title\" TEXT NOT NULL,\n" +
+                "  \"id\" TEXT NOT NULL,\n" +
                 "  \"institute\" TEXT NOT NULL,\n" +
-                "  PRIMARY KEY (\"title\", \"institute\")\n" +
+                "  PRIMARY KEY (\"id\", \"institute\")\n" +
                 ");"
 
         const val CREATE_USERS = "CREATE TABLE IF NOT EXISTS \"users\" (\n" +
-                "  \"title\" TEXT NOT NULL,\n" +
+                "  \"id\" TEXT NOT NULL,\n" +
                 "  \"user\" TEXT NOT NULL,\n" +
-                "  PRIMARY KEY (\"title\", \"user\")\n" +
+                "  PRIMARY KEY (\"id\", \"user\")\n" +
                 ");\n"
 
         const val CREATE_ALGORITHM = "CREATE TABLE IF NOT EXISTS \"algorithms\" (\n" +
-                "  \"title\" TEXT NOT NULL,\n" +
+                "  \"id\" TEXT NOT NULL,\n" +
                 "  \"algorithm\" TEXT NOT NULL,\n" +
-                "  PRIMARY KEY (\"title\", \"algorithm\")\n" +
+                "  PRIMARY KEY (\"id\", \"algorithm\")\n" +
                 ");\n"
 
         const val CREATE_DATA = "CREATE TABLE IF NOT EXISTS \"data\" (\n" +
-                "  \"title\" TEXT NOT NULL,\n" +
+                "  \"id\" TEXT NOT NULL,\n" +
                 "  \"data\" TEXT NOT NULL,\n" +
-                "  PRIMARY KEY (\"title\", \"data\")\n" +
+                "  PRIMARY KEY (\"id\", \"data\")\n" +
                 ");\n"
     }
 }

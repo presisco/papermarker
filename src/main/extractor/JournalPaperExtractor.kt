@@ -38,16 +38,19 @@ class JournalPaperExtractor : PaperExtractor() {
 
     override fun extractInfoFromUrl(url: String): PaperInfo {
         val htmlString = getHtmlString(url)!!
+
         val doc = Jsoup.parse(htmlString)
         val body = doc.body()
 
         val sumInfoMap = getSummaryInfo(body)
 
         return PaperInfo(
+                id = getPaperIdFromUrl(url),
                 title = getPaperTitle(body),
                 authors = sumInfoMap["authors"] as ArrayList<String>,
                 year = getPaperYear(htmlString),
                 publisher = getPublisher(body),
+                type = getPaperTypeFromUrl(url),
                 institutes = sumInfoMap["institutes"] as ArrayList<String>,
                 keywords = getPaperKeywords(body),
                 link = url,
@@ -59,7 +62,7 @@ class JournalPaperExtractor : PaperExtractor() {
     }
 
     companion object {
-        const val REGEX_YEAR = ">(\\d+)年"
+        const val REGEX_YEAR = ">(\\d+?)年"
     }
 
 }
