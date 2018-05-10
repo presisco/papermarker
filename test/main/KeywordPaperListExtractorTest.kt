@@ -7,7 +7,7 @@ class KeywordPaperListExtractorTest {
     @Test
     fun validate() {
         val extractor = KeywordPaperListExtractor()
-        val paperList = extractor.extractListFromKeyword("交通监控")
+        val paperList = extractor.extractAllListFromKeyword("交通监控")
         println(paperList.size)
     }
 }
