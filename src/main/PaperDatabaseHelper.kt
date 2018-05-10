@@ -140,11 +140,11 @@ class PaperDatabaseHelper {
         return stringList
     }
 
-    fun readPaperTitles(sql: String) = sql2StringList(sql)
+    fun readPaperIds() = sql2StringList(SELECT_PAPER_IDS)
 
-    fun readPaperTitles() = readPaperTitles(SELECT_PAPER_IDS)
+    fun readPaperIdsByKeyword(keyword: String) = sql2StringList(SELECT_PAPER_IDS_BY_KEYWORD.replace("KEYWORD", keyword))
 
-    fun readPaperTitlesByKeyword(keyword: String) = readPaperTitles(SELECT_PAPER_IDS_BY_KEYWORD.replace("KEYWORD", keyword))
+    fun readPaperIdsWithSql(sql: String) = sql2StringList(sql)
 
     fun readAuthorsForPaper(id: String) = sql2StringList(SELECT_AUTHORS.replace("ID", id))
 

@@ -6,15 +6,25 @@ import java.util.regex.Pattern
 class KeywordPaperListExtractor : HtmlInfoExtractor<List<Pair<String, String>>>() {
     private val authorPattern = Pattern.compile(REGEX_AUTHOR)
 
-    fun extractListFromKeyword(keyword: String): List<Pair<String, String>> {
+    fun extractAllListFromKeyword(keyword: String): List<Pair<String, String>> {
         val paperList = ArrayList<Pair<String, String>>()
-        paperList.addAll(extractInfoFromUrl(KEYWORD_JOURNAL_SEARCH.replace("KEYWORD", keyword), "journal"))
-        paperList.addAll(extractInfoFromUrl(KEYWORD_DOCTOR_DEGREE_SEARCH.replace("KEYWORD", keyword), "degree"))
-        paperList.addAll(extractInfoFromUrl(KEYWORD_MASTER_DEGREE_SEARCH.replace("KEYWORD", keyword), "degree"))
-        paperList.addAll(extractInfoFromUrl(KEYWORD_LOCAL_CONFERENCE_SEARCH.replace("KEYWORD", keyword), "conference"))
-        paperList.addAll(extractInfoFromUrl(KEYWORD_GLOBAL_CONFERENCE_SEARCH.replace("KEYWORD", keyword), "conference"))
+        paperList.addAll(extractJournalList(keyword))
+        paperList.addAll(extractDoctorList(keyword))
+        paperList.addAll(extractMasterList(keyword))
+        paperList.addAll(extractLocalConferenceList(keyword))
+        paperList.addAll(extractGlobalConferenceList(keyword))
         return paperList
     }
+
+    fun extractJournalList(keyword: String) = extractInfoFromUrl(KEYWORD_JOURNAL_SEARCH.replace("KEYWORD", keyword), "journal")
+
+    fun extractDoctorList(keyword: String) = extractInfoFromUrl(KEYWORD_DOCTOR_DEGREE_SEARCH.replace("KEYWORD", keyword), "degree")
+
+    fun extractMasterList(keyword: String) = extractInfoFromUrl(KEYWORD_MASTER_DEGREE_SEARCH.replace("KEYWORD", keyword), "degree")
+
+    fun extractLocalConferenceList(keyword: String) = extractInfoFromUrl(KEYWORD_LOCAL_CONFERENCE_SEARCH.replace("KEYWORD", keyword), "conference")
+
+    fun extractGlobalConferenceList(keyword: String) = extractInfoFromUrl(KEYWORD_GLOBAL_CONFERENCE_SEARCH.replace("KEYWORD", keyword), "conference")
 
     override fun extractInfoFromUrl(url: String): List<Pair<String, String>> = extractInfoFromUrl(url, "journal")
 
