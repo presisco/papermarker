@@ -24,6 +24,8 @@ class SearchDialog : Dialog() {
 
     override fun init(): Dialog {
         getFrame().setSize(600, 100)
+        progressBar.isStringPainted = true
+        progressBar.string = "idle"
 
         searchButton.addActionListener(this)
 
@@ -54,6 +56,8 @@ class SearchDialog : Dialog() {
             searchButton -> {
                 SimpleTask({
                     searchButton.isEnabled = false
+                    progressBar.minimum = 0
+                    progressBar.string = "loading paper list"
 
                     val keyword = searchKeyField.text.replace(" ", "%20")
                     val paperList = keywordPaperListExtractor.extractAllListFromKeyword(keyword)
@@ -61,10 +65,14 @@ class SearchDialog : Dialog() {
                     println("paper count for keyword: $keyword is ${paperList.size}")
 
                     progressBar.value = 0
+                    progressBar.maximum = paperList.size
 
                     var failCounter = 0
                     var totalCounter = 0
                     for (item in paperList) {
+                        totalCounter++
+                        progressBar.value = totalCounter
+                        progressBar.string = "loading paper $totalCounter / ${paperList.size} "
                         try {
                             val paperInfo = extractors[item.first]!!.extractInfoFromUrl(item.second)
                             paperDatabaseHelper.addPaper(paperInfo)
@@ -77,15 +85,13 @@ class SearchDialog : Dialog() {
                                 e.printStackTrace()
                             }
                             failCounter++
-                        } finally {
-                            totalCounter++
-                            progressBar.value = totalCounter * 100 / paperList.size
                         }
                     }
                     println("total papers: $totalCounter, saved: ${totalCounter - failCounter}")
                     JOptionPane.showMessageDialog(null, "total papers: $totalCounter, saved: ${totalCounter - failCounter}")
                 }, {
                     searchButton.isEnabled = true
+                    progressBar.string = "idle"
                 }).start()
             }
         }
