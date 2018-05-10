@@ -3,10 +3,7 @@ package main.dialog
 import main.DialogScheduler
 import main.swingtoolbox.SwingLayoutHelper
 import java.awt.event.ActionEvent
-import javax.swing.JButton
-import javax.swing.JFileChooser
-import javax.swing.JLabel
-import javax.swing.JTextField
+import javax.swing.*
 
 class WelcomeDialog : Dialog() {
     private val selectFileButton = JButton("select file")
@@ -16,6 +13,8 @@ class WelcomeDialog : Dialog() {
     private var filePath = ""
 
     override fun init(): Dialog {
+        getFrame().defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+
         getFrame().setSize(600, 100)
 
         selectFileButton.addActionListener(this)

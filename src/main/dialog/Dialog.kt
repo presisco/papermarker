@@ -1,6 +1,9 @@
 package main.dialog
 
+import main.DialogScheduler
 import java.awt.event.ActionListener
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import javax.swing.JFrame
 
 abstract class Dialog : ActionListener {
@@ -12,7 +15,12 @@ abstract class Dialog : ActionListener {
     abstract fun update(data: Any?)
 
     init {
-        frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        frame.defaultCloseOperation = JFrame.HIDE_ON_CLOSE
+        frame.addWindowStateListener { event: WindowEvent ->
+            if (event.newState == WindowEvent.WINDOW_DEACTIVATED) {
+                DialogScheduler.windowClosed()
+            }
+        }
     }
 
     open fun show() {
@@ -22,4 +30,6 @@ abstract class Dialog : ActionListener {
     open fun hide() {
         frame.isVisible = false
     }
+
+    class EventAdapter : WindowAdapter()
 }

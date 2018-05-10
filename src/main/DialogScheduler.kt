@@ -12,7 +12,12 @@ object DialogScheduler {
     }
 
     fun return2previous() {
-        callStack.pop().hide()
+        callStack.pop()
+        callStack.peek().show()
+    }
+
+    fun windowClosed() {
+        callStack.pop()
         callStack.peek().show()
     }
 

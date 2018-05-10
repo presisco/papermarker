@@ -18,7 +18,11 @@ class DegreePaperExtractor : PaperExtractor() {
 
     fun getAbstract(body: Element): String {
         val abstractElement = body.getElementById("ChDivSummary")
-        return abstractElement.text()
+        return if (abstractElement == null) {
+            ""
+        } else {
+            abstractElement.text()
+        }
     }
 
     override fun extractInfoFromUrl(url: String): PaperInfo {
