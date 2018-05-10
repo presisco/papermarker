@@ -34,7 +34,7 @@ object DialogScheduler {
     }
 
     fun add(next: String) {
-        callStack.peek().hide()
+        //callStack.peek().hide()
         dialogMap[next]!!.show()
         callStack.push(dialogMap[next])
     }

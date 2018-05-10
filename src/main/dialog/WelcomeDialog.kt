@@ -13,7 +13,7 @@ class WelcomeDialog : Dialog() {
     private var filePath = ""
 
     override fun init(): Dialog {
-        getFrame().defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        getFrame().defaultCloseOperation = JFrame.HIDE_ON_CLOSE
 
         getFrame().setSize(600, 100)
 

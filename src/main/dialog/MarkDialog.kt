@@ -6,6 +6,7 @@ import main.model.PaperInfo
 import main.swingtoolbox.SwingLayoutHelper
 import java.awt.event.ActionEvent
 import javax.swing.*
+import javax.swing.text.JTextComponent
 
 class MarkDialog : Dialog() {
     private val cancelButton = JButton("cancel changes")
@@ -16,7 +17,7 @@ class MarkDialog : Dialog() {
     private val sqlField = JTextField(60)
     private val readBySqlButton = JButton("read by sql")
     private val gotoButton = JButton("go to")
-    private val paperFieldMap = mapOf(
+    private val paperFieldMap = mapOf<String, JTextComponent>(
             "link" to JTextField(48),
             "id" to JTextField(48),
             "title" to JTextField(60),
@@ -48,10 +49,10 @@ class MarkDialog : Dialog() {
         for ((title, field) in paperFieldMap) {
             val row = Box.createHorizontalBox()
             row.add(JLabel(title))
-            row.add(when (field) {
-                is JTextArea -> JScrollPane(field)
-                else -> field
-            })
+            when (field) {
+                is JTextArea -> row.add(JScrollPane(field))
+                else -> row.add(field)
+            }
             vbox.add(row)
         }
 
@@ -128,18 +129,18 @@ class MarkDialog : Dialog() {
     fun save() {
         val paper = fromField()
         paperDatabaseHelper.editPaper(paper)
-        paperDatabaseHelper.editUsersInfo(paper.title, paperFieldMap["users"]!!.text)
-        paperDatabaseHelper.editAlgorithmsInfo(paper.title, paperFieldMap["algorithms"]!!.text)
-        paperDatabaseHelper.editDataInfo(paper.title, paperFieldMap["data"]!!.text)
+        paperDatabaseHelper.editUsersInfo(paper.id, paperFieldMap["users"]!!.text)
+        paperDatabaseHelper.editAlgorithmsInfo(paper.id, paperFieldMap["algorithms"]!!.text)
+        paperDatabaseHelper.editDataInfo(paper.id, paperFieldMap["data"]!!.text)
     }
 
     fun loadPaperInfo(newIndex: Int) {
         index = newIndex
         indexField.text = (index + 1).toString()
         originalPaperInfo = paperDatabaseHelper.readPaperInfo(paperIdList[newIndex])
-        originalUsers = StringToolbox.concat(paperDatabaseHelper.readUsersForPaper(originalPaperInfo.title), ",")
-        originalAlgorithms = StringToolbox.concat(paperDatabaseHelper.readAlgorithmsForPaper(originalPaperInfo.title), ",")
-        originalData = StringToolbox.concat(paperDatabaseHelper.readDataForPaper(originalPaperInfo.title), ",")
+        originalUsers = StringToolbox.concat(paperDatabaseHelper.readUsersForPaper(originalPaperInfo.id), ",")
+        originalAlgorithms = StringToolbox.concat(paperDatabaseHelper.readAlgorithmsForPaper(originalPaperInfo.id), ",")
+        originalData = StringToolbox.concat(paperDatabaseHelper.readDataForPaper(originalPaperInfo.id), ",")
     }
 
     fun updateFields() {
@@ -153,6 +154,7 @@ class MarkDialog : Dialog() {
         when (e.source) {
             readBySqlButton -> {
                 paperIdList = paperDatabaseHelper.readPaperIdsWithSql(sqlField.text)
+                indexLabel.text = paperIdList.size.toString()
                 loadPaperInfo(0)
                 updateFields()
             }
@@ -167,8 +169,10 @@ class MarkDialog : Dialog() {
             }
             nextButton -> {
                 save()
-                loadPaperInfo(index + 1)
-                updateFields()
+                if (index < paperIdList.size) {
+                    loadPaperInfo(index + 1)
+                    updateFields()
+                }
             }
             gotoButton -> {
                 save()
