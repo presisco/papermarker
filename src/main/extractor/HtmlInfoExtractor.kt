@@ -27,18 +27,14 @@ abstract class HtmlInfoExtractor<out T> {
     fun getHtmlString(url: String): String? {
         var retryCounter = 5
 
-        var (_, _, result) = Fuel.get(url)
-                .timeout(5000)
-                .timeoutRead(5000)
-                .responseString()
+        val request = Fuel.get(url).timeout(5000).timeoutRead(5000)
 
-        while (retryCounter > 0 && result == null) {
+        var (_, _, result) = request.responseString()
+
+        while (retryCounter > 0 && result.component1() == null) {
             println("link: $url received null, retry in 0.5 second")
             Thread.sleep(500)
-            val triple = Fuel.get(url)
-                    .timeout(5000)
-                    .timeoutRead(5000)
-                    .responseString()
+            val triple = request.responseString()
             result = triple.third
             retryCounter--
         }

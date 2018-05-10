@@ -56,7 +56,7 @@ class SearchDialog : Dialog() {
                     searchButton.isEnabled = false
 
                     val keyword = searchKeyField.text.replace(" ", "%20")
-                    val paperList = keywordPaperListExtractor.extractListFromKeyword(keyword)
+                    val paperList = keywordPaperListExtractor.extractAllListFromKeyword(keyword)
                     val failList = ArrayList<Pair<String, String>>()
                     println("paper count for keyword: $keyword is ${paperList.size}")
 
